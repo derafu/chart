@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Derafu: Chart - PHP Chart Library</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.0/css/all.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://derafu.org/foundation/css/styles.min.css" rel="stylesheet" />
+    </head>
+<body class="derafu-theme-earthstone">
+                <div id="header-container" class="sticky-top"></div>
+    
+            <main>
+            <div class="container py-4">
+    <div class="markdown-body"><h1><a id="content-derafu-chart---php-chart-library" href="index.html#content-derafu-chart---php-chart-library" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Derafu: Chart - PHP Chart Library</h1>
+<p><a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://github.com/derafu/chart/actions/workflows/ci.yml?query=branch%3Amain"><img src="https://github.com/derafu/chart/actions/workflows/ci.yml/badge.svg?branch=main&amp;event=push" alt="CI Workflow" /></a>
+<a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a></p>
+<p>Derafu Chart is a PHP library for creating diverse charts. The library is designed to generate charts entirely in PHP using GD or other renderers. It supports a variety of chart types and is easy to extend.</p>
+<h2><a id="content-features" href="index.html#content-features" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Features</h2>
+<ul>
+<li>📊 Multiple chart types: Bar, Line, Pie, Radar, Waterfall, and more.</li>
+<li>⚙️ Fully customizable options.</li>
+<li>📦 Lightweight and easy to integrate.</li>
+<li>🖼️ Output in PNG and flexible rendering options.</li>
+<li>💡 Extensible via custom renderers.</li>
+<li>🧩 Encodable to JSON for interoperability.</li>
+<li>🏷️ Open-source under the MIT license.</li>
+</ul>
+<h2><a id="content-installation" href="index.html#content-installation" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Installation</h2>
+<p>You can install the library using Composer:</p>
+<pre><code class="language-bash">composer require derafu/chart
+</code></pre>
+<h2><a id="content-usage" href="index.html#content-usage" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Usage</h2>
+<p>You can choose the style that best suits your coding preferences or project requirements:</p>
+<ul>
+<li>Creating a Chart with the Factory.</li>
+<li>Creating a Chart with Method Chaining.</li>
+</ul>
+<p>Both approaches allow flexibility depending on whether you prefer array-based configuration or object-oriented method chaining.</p>
+<h3><a id="content-creating-a-chart-with-the-factory" href="index.html#content-creating-a-chart-with-the-factory" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Creating a Chart with the Factory</h3>
+<p>Here’s how to create a simple bar chart using the <code>ChartFactory</code>:</p>
+<pre><code class="language-php">use Derafu\Chart\ChartFactory;
+use Derafu\Chart\Enum\ChartType;
+
+$chart = (new ChartFactory())-&gt;renderFromArray([
+    'type' =&gt; ChartType::BAR,
+    'title' =&gt; 'Ventas',
+    'label_x' =&gt; 'Mes',
+    'label_y' =&gt; 'Ventas',
+    'datasets' =&gt; [
+        [
+            'points' =&gt; [
+                'Enero' =&gt; 10000,
+                'Febrero' =&gt; 12000,
+                'Marzo' =&gt; 1200,
+                'Abril' =&gt; 1350,
+                'Mayo' =&gt; 5000,
+                'Junio' =&gt; 5000,
+                'Julio' =&gt; 5000,
+                'Agosto' =&gt; 5000,
+                'Septiembre' =&gt; 15000,
+            ],
+        ],
+    ],
+]);
+
+file_put_contents('chart.png', $chart);
+</code></pre>
+<h3><a id="content-creating-a-chart-with-method-chaining" href="index.html#content-creating-a-chart-with-method-chaining" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Creating a Chart with Method Chaining</h3>
+<p>Here’s how to create the same bar chart using method chaining:</p>
+<pre><code class="language-php">use Derafu\Chart\Chart;
+use Derafu\Chart\Dataset;
+use Derafu\Chart\Enum\ChartType;
+
+$chart = (new Chart(ChartType::BAR))
+    -&gt;setTitle('Ventas')
+    -&gt;setLabelX('Mes')
+    -&gt;setLabelY('Ventas')
+    -&gt;addDataset(
+        (new Dataset())
+            -&gt;setLabel('2024')
+            -&gt;setColor('blue')
+            -&gt;addPoints([
+                'Enero' =&gt; 10000,
+                'Febrero' =&gt; 12000,
+                'Marzo' =&gt; 1200,
+                'Abril' =&gt; 1350,
+                'Mayo' =&gt; 5000,
+                'Junio' =&gt; 5000,
+                'Julio' =&gt; 5000,
+                'Agosto' =&gt; 5000,
+                'Septiembre' =&gt; 15000,
+            ])
+    );
+
+file_put_contents('chart.png', $chart-&gt;render());
+</code></pre>
+<h2><a id="content-chart-types" href="index.html#content-chart-types" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Chart Types</h2>
+<p>Here is an overview of the chart types supported, with examples.</p>
+<h3><a id="content-1-area-chart" href="index.html#content-1-area-chart" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>1. Area Chart</h3>
+<p>Displays continuous data trends over time or categories. Ideal for showing volume and trends.</p>
+<p><img src="tests/output/chart-area.png.html" alt="Area Chart" /></p>
+<h3><a id="content-2-bar-chart" href="index.html#content-2-bar-chart" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>2. Bar Chart</h3>
+<p>Shows discrete data comparisons using vertical bars. Perfect for categorical comparisons.</p>
+<p><img src="tests/output/chart-bar.png.html" alt="Bar Chart" /></p>
+<h3><a id="content-3-bubble-chart" href="index.html#content-3-bubble-chart" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>3. Bubble Chart</h3>
+<p>Highlights relationships and distributions. Bubble size represents a third dimension.</p>
+<p><img src="tests/output/chart-bubble.png.html" alt="Bubble Chart" /></p>
+<h3><a id="content-4-horizontal-bar-chart" href="index.html#content-4-horizontal-bar-chart" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>4. Horizontal Bar Chart</h3>
+<p>Provides an alternative for displaying bar data, especially useful when labels are long.</p>
+<p><img src="tests/output/chart-horizontal_bar.png.html" alt="Horizontal Bar Chart" /></p>
+<p><strong>Text Output Example:</strong></p>
+<pre><code class="language-plaintext">Chart name: horizontal_bar
+
+                                     Ventas
+
+Enero      │ ██████████████████████████ 10.000
+Febrero    │ ███████████████████████████████ 12.000
+Marzo      │ ███ 1.200
+Abril      │ ███ 1.350
+Mayo       │ █████████████ 5.000
+Junio      │ █████████████ 5.000
+Julio      │ █████████████ 5.000
+Agosto     │ █████████████ 5.000
+Septiembre │ ██████████████████████████████████████ 15.000
+           └────────────────────────────────────────────────────
+           0         4K        8K        12K       16K       20K
+</code></pre>
+<h3><a id="content-5-pie-chart" href="index.html#content-5-pie-chart" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>5. Pie Chart</h3>
+<p>Represents proportions in a dataset. Great for visualizing percentages.</p>
+<p><img src="tests/output/chart-pie.png.html" alt="Pie Chart" /></p>
+<h3><a id="content-6-radar-chart" href="index.html#content-6-radar-chart" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>6. Radar Chart</h3>
+<p>Compares multiple variables across multiple dimensions. Ideal for skill or performance analysis.</p>
+<p><img src="tests/output/chart-radar_1.png.html" alt="Radar Chart" /></p>
+<h3><a id="content-7-scatter-plot" href="index.html#content-7-scatter-plot" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>7. Scatter Plot</h3>
+<p>Shows relationships between two variables using points. Commonly used for distribution analysis.</p>
+<p><img src="tests/output/chart-scatter.png.html" alt="Scatter Plot" /></p>
+<h3><a id="content-8-waterfall-chart" href="index.html#content-8-waterfall-chart" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>8. Waterfall Chart</h3>
+<p>Visualizes cumulative changes in value over a sequence. Useful for profit and loss analysis.</p>
+<p><img src="tests/output/chart-waterfall.png.html" alt="Waterfall Chart" /></p>
+<h2><a id="content-roadmap" href="index.html#content-roadmap" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Roadmap</h2>
+<ul>
+<li>🔍 Export charts to JSON (e.g., Chart.js, regression libraries).</li>
+<li>📈 Support trendlines and regression models.</li>
+<li>🔄 Add SVG rendering support.</li>
+<li>🌐 Add more internationalization options.</li>
+</ul>
+<h2><a id="content-contributing" href="index.html#content-contributing" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>Contributing</h2>
+<p>Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.</p>
+<h2><a id="content-license" href="index.html#content-license" class="text-decoration-none small text-muted" aria-hidden="true" title="Permalink"><i class="fa-solid fa-link"></i> </a>License</h2>
+<p>This package is open-sourced software licensed under the <a rel="nofollow noopener noreferrer" target="_blank" class="external-link" href="https://opensource.org/licenses/MIT">MIT license</a>.</p>
+<hr />
+<p>Happy charting!</p>
+</div>
+</div>
+        </main>
+    
+            <div id="footer-container"></div>
+<script src="https://derafu.org/foundation/js/derafu.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    </body>
+</html>
