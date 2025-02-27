@@ -1,8 +1,9 @@
 # Derafu: Chart - PHP Chart Library
 
+[![CI Workflow](https://github.com/derafu/chart/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/derafu/chart/actions/workflows/ci.yml?query=branch%3Amain)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Derafu: Chart is a PHP library for creating diverse charts. The library is designed to generate charts entirely in PHP using GD or other renderers. It supports a variety of chart types and is easy to extend.
+Derafu Chart is a PHP library for creating diverse charts. The library is designed to generate charts entirely in PHP using GD or other renderers. It supports a variety of chart types and is easy to extend.
 
 ## Features
 
@@ -176,16 +177,14 @@ Visualizes cumulative changes in value over a sequence. Useful for profit and lo
 - 🔄 Add SVG rendering support.
 - 🌐 Add more internationalization options.
 
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
 ## License
 
-This library is licensed under the MIT License. See the `LICENSE` file for more details.
+This package is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-## Contributions
-
-Contributions are welcome! Feel free to open issues or submit pull requests to improve this library.
-
-## Gallery
-
-Explore the variety of charts available in the `/tests/output` folder for more examples and inspiration.
+---
 
 Happy charting!
