@@ -104,7 +104,6 @@ abstract class AbstractChartGdRenderer implements RendererInterface
         };
 
         $data = ob_get_clean();
-        imagedestroy($image);
 
         return $data;
     }
