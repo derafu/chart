@@ -19,8 +19,8 @@ use Derafu\Chart\Exception\ChartException;
 use Derafu\Chart\Model\Color;
 use Derafu\Chart\Renderer\Gd\Enum\FontStyle;
 use Derafu\Chart\Renderer\Gd\Enum\TextAlign;
+use Derafu\Translation\Exception\Core\TranslatableLogicException as LogicException;
 use GdImage;
-use LogicException;
 
 /**
  * Base class for all chart renderers using GD.
@@ -97,10 +97,10 @@ abstract class AbstractChartGdRenderer implements RendererInterface
             ImageFormat::JPEG => imagejpeg($image),
             ImageFormat::WEBP => imagewebp($image),
             ImageFormat::GIF => imagegif($image),
-            default => throw new ChartException(sprintf(
-                'Chart output format %s is not supported by the renderer.',
-                $format->name
-            )),
+            default => throw new ChartException([
+                'Chart output format {format} is not supported by the renderer.',
+                'format' => $format->name,
+            ]),
         };
 
         $data = ob_get_clean();

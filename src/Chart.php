@@ -18,7 +18,7 @@ use Derafu\Chart\Contract\DatasetInterface;
 use Derafu\Chart\Contract\RendererInterface;
 use Derafu\Chart\Enum\ChartType;
 use Derafu\Chart\Model\Scale;
-use LogicException;
+use Derafu\Translation\Exception\Core\TranslatableLogicException as LogicException;
 
 /**
  * Class representing a chart.

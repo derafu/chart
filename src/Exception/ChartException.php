@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace Derafu\Chart\Exception;
 
-use Exception;
+use Derafu\Translation\Exception\Core\TranslatableException;
 
 /**
  * Exception for errors related to chart creation.
  */
-class ChartException extends Exception
+class ChartException extends TranslatableException
 {
 }
