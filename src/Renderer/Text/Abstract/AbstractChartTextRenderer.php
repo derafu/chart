@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Derafu\Chart\Renderer\Text\Abstract;
 
 use Derafu\Chart\Contract\ChartInterface;
+use Derafu\Chart\Contract\DatasetInterface;
 use Derafu\Chart\Contract\RendererInterface;
+use Derafu\Chart\Dataset\DatasetSelection;
 
 /**
  * Base class for rendering charts in ASCII text.
@@ -53,10 +55,21 @@ abstract class AbstractChartTextRenderer implements RendererInterface
      */
     public function render(ChartInterface $chart): string
     {
+        $this->getDatasetsToRender($chart);
         $output = $this->renderTitle($chart);
         $output .= $this->renderChart($chart);
 
         return $output;
+    }
+
+    /**
+     * Selects populated datasets for rendering without mutating the chart.
+     *
+     * @return non-empty-array<array-key, DatasetInterface>
+     */
+    protected function getDatasetsToRender(ChartInterface $chart): array
+    {
+        return DatasetSelection::forRendering($chart->getDatasets());
     }
 
     /**

@@ -14,6 +14,7 @@ namespace Derafu\Chart\Renderer\Gd;
 
 use Derafu\Chart\Contract\ChartInterface;
 use Derafu\Chart\Contract\RendererInterface;
+use Derafu\Chart\Model\Color;
 use Derafu\Chart\Renderer\Gd\Abstract\AbstractVerticalGridChartGdRenderer;
 use Derafu\Chart\Renderer\Gd\Enum\TextAlign;
 use GdImage;
@@ -59,7 +60,7 @@ class RadarChartGdRenderer extends AbstractVerticalGridChartGdRenderer implement
                     $y1,
                     $x2,
                     $y2,
-                    imagecolorallocatealpha($image, 200, 200, 200, 75)
+                    $this->allocateColorAlpha($image, new Color('#C8C8C8'), 75)
                 );
             }
 
@@ -76,7 +77,7 @@ class RadarChartGdRenderer extends AbstractVerticalGridChartGdRenderer implement
             // );
         }
 
-        $datasets = $chart->getDatasets();
+        $datasets = $this->getDatasetsToRender($chart);
         $categories = $datasets[0]->getLabels();
         $numCategories = count($categories);
         $angleStep = 360 / $numCategories;
@@ -97,12 +98,7 @@ class RadarChartGdRenderer extends AbstractVerticalGridChartGdRenderer implement
                 $centerY,
                 $endX,
                 $endY,
-                imagecolorallocate(
-                    $image,
-                    $gridColor->getRed(),
-                    $gridColor->getGreen(),
-                    $gridColor->getBlue()
-                )
+                $this->allocateColor($image, $gridColor)
             );
 
             // Draw label.
@@ -113,7 +109,7 @@ class RadarChartGdRenderer extends AbstractVerticalGridChartGdRenderer implement
             $lineEndY = (int) round($centerY + sin($angle) * $labelDistance);
 
             // Get text dimensions.
-            $box = imagettfbbox($fontSize, 0, $this->getFontPath(), $categories[$i]);
+            $box = $this->measureText($fontSize, 0, $this->getFontPath(), $categories[$i]);
             $textWidth = abs($box[4] - $box[0]);
             $textHeight = abs($box[5] - $box[1]);
 
@@ -156,12 +152,7 @@ class RadarChartGdRenderer extends AbstractVerticalGridChartGdRenderer implement
         foreach ($datasets as $dataset) {
             $points = [];
             $color = $dataset->getColor();
-            $plotColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $plotColor = $this->allocateColor($image, $color);
 
             // Calculate points.
             foreach ($categories as $i => $category) {

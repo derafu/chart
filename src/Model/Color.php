@@ -30,28 +30,28 @@ class Color
     /**
      * RED component of the color (0 to 255).
      *
-     * @var int
+     * @var int<0, 255>
      */
     private readonly int $red;
 
     /**
      * GREEN component of the color (0 to 255).
      *
-     * @var int
+     * @var int<0, 255>
      */
     private readonly int $green;
 
     /**
      * BLUE component of the color (0 to 255).
      *
-     * @var int
+     * @var int<0, 255>
      */
     private readonly int $blue;
 
     /**
      * Color constructor.
      *
-     * @param string $hex Color in hexadecimal format, with or without "#".
+     * @param string|ColorPalette $hex Six hexadecimal digits, with an optional leading "#", or a palette color.
      */
     public function __construct(string|ColorPalette $hex = ColorPalette::RICH_BLUE)
     {
@@ -59,19 +59,17 @@ class Color
             $hex = $hex->value;
         }
 
-        $this->hex = ltrim($hex, '#');
-
-        $this->red = hexdec(substr($this->hex, 0, 2));
-        $this->green = hexdec(substr($this->hex, 2, 2));
-        $this->blue = hexdec(substr($this->hex, 4, 2));
-
-        foreach ([$this->red, $this->green, $this->blue] as $value) {
-            if ($value < 0 || $value > 255) {
-                throw new ChartException(
-                    'El color debe estar entre los valores #000000 y #FFFFFF hexadecimal.'
-                );
-            }
+        if (preg_match('/\A#?[0-9a-fA-F]{6}\z/', $hex) !== 1) {
+            throw new ChartException([
+                'Invalid hexadecimal color {color}: expected six hexadecimal digits with an optional leading #.',
+                'color' => $hex,
+            ]);
         }
+        $this->hex = str_starts_with($hex, '#') ? substr($hex, 1) : $hex;
+        $rgb = intval($this->hex, 16);
+        $this->red = ($rgb >> 16) & 0xff;
+        $this->green = ($rgb >> 8) & 0xff;
+        $this->blue = $rgb & 0xff;
     }
 
     /**
@@ -101,7 +99,7 @@ class Color
     /**
      * Gets the red component of the color.
      *
-     * @return int
+     * @return int<0, 255>
      */
     public function getRed(): int
     {
@@ -111,7 +109,7 @@ class Color
     /**
      * Gets the green component of the color.
      *
-     * @return int
+     * @return int<0, 255>
      */
     public function getGreen(): int
     {
@@ -121,7 +119,7 @@ class Color
     /**
      * Gets the blue component of the color.
      *
-     * @return int
+     * @return int<0, 255>
      */
     public function getBlue(): int
     {
@@ -131,7 +129,7 @@ class Color
     /**
      * Retrieves the color in RGB format.
      *
-     * @return int[]
+     * @return array{int<0, 255>, int<0, 255>, int<0, 255>}
      */
     public function toRGB(): array
     {

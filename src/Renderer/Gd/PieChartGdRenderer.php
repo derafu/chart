@@ -14,6 +14,7 @@ namespace Derafu\Chart\Renderer\Gd;
 
 use Derafu\Chart\Contract\ChartInterface;
 use Derafu\Chart\Contract\RendererInterface;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Enum\ColorPalette;
 use Derafu\Chart\Model\Color;
 use Derafu\Chart\Renderer\Gd\Abstract\AbstractChartGdRenderer;
@@ -37,7 +38,7 @@ class PieChartGdRenderer extends AbstractChartGdRenderer implements RendererInte
         $fontSize = $chart->getOptions()->getLabelFontSize();
 
         // Get data.
-        $dataset = $chart->getDatasets()[0];
+        $dataset = $this->getDatasetsToRender($chart)[0];
         $points = $dataset->getPoints();
 
         // Calculate total.
@@ -52,7 +53,7 @@ class PieChartGdRenderer extends AbstractChartGdRenderer implements RendererInte
         foreach ($points as $point) {
             $percentage = round(($point->getValue() / $total) * 100, 1);
             $text = $point->getLabel() . ' (' . $percentage . '%)';
-            $box = imagettfbbox($fontSize, 0, $fontPath, $text);
+            $box = $this->measureText($fontSize, 0, $fontPath, $text);
             $textWidth = abs($box[4] - $box[0]);
             $maxLegendWidth = max($maxLegendWidth, $textWidth);
         }
@@ -81,12 +82,7 @@ class PieChartGdRenderer extends AbstractChartGdRenderer implements RendererInte
 
             // Color for this segment.
             $color = $point->getColor() ?? new Color(ColorPalette::getColorByIndex($i++));
-            $sectorColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $sectorColor = $this->allocateColor($image, $color);
 
             // Draw segment.
             imagefilledarc(
@@ -149,5 +145,13 @@ class PieChartGdRenderer extends AbstractChartGdRenderer implements RendererInte
             $startAngle += $angle;
             $legendY += $fontSize * 2; // Space between legend items.
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDatasetsToRender(ChartInterface $chart): array
+    {
+        return array_values(DatasetSelection::forRendering($chart->getDatasets(), true));
     }
 }

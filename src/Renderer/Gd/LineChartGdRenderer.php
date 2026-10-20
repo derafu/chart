@@ -45,7 +45,7 @@ class LineChartGdRenderer extends AbstractVerticalGridChartGdRenderer implements
         $gridHeight = $gridBottom - $gridTop;
 
         // Get all datasets.
-        $datasets = $chart->getDatasets();
+        $datasets = $this->getDatasetsToRender($chart);
 
         // Calculate available width for points.
         $availableWidth = $size->getWidth() - $margin->getLeft() - $margin->getRight();
@@ -61,12 +61,7 @@ class LineChartGdRenderer extends AbstractVerticalGridChartGdRenderer implements
         foreach ($datasets as $dataset) {
             // Get dataset color.
             $color = $dataset->getColor();
-            $lineColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $lineColor = $this->allocateColor($image, $color);
 
             $points = $dataset->getPoints();
             $previousX = null;

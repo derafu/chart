@@ -45,7 +45,7 @@ class BarChartGdRenderer extends AbstractVerticalGridChartGdRenderer implements 
         $gridHeight = $gridBottom - $gridTop;
 
         // Get all datasets.
-        $datasets = $chart->getDatasets();
+        $datasets = $this->getDatasetsToRender($chart);
         $datasetCount = count($datasets);
 
         // Calculate available width for bars.
@@ -66,12 +66,7 @@ class BarChartGdRenderer extends AbstractVerticalGridChartGdRenderer implements 
         foreach ($datasets as $datasetIndex => $dataset) {
             // Get the dataset color.
             $color = $dataset->getColor();
-            $barColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $barColor = $this->allocateColor($image, $color);
 
             // Render each point in the dataset.
             foreach ($dataset->getPoints() as $pointIndex => $point) {

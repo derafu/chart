@@ -47,7 +47,7 @@ class HorizontalBarChartGdRenderer extends AbstractChartGdRenderer implements Re
         $gridHeight = $gridBottom - $gridTop;
 
         // Get datasets.
-        $datasets = $chart->getDatasets();
+        $datasets = $this->getDatasetsToRender($chart);
         $datasetCount = count($datasets);
 
         // Calculate available height for bars.
@@ -66,12 +66,7 @@ class HorizontalBarChartGdRenderer extends AbstractChartGdRenderer implements Re
         // Render each dataset.
         foreach ($datasets as $datasetIndex => $dataset) {
             $color = $dataset->getColor();
-            $barColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $barColor = $this->allocateColor($image, $color);
 
             // Render each data point in the dataset.
             foreach ($dataset->getPoints() as $pointIndex => $point) {
@@ -132,12 +127,7 @@ class HorizontalBarChartGdRenderer extends AbstractChartGdRenderer implements Re
         $xSteps = 5;
         $xStepValue = ($scale->getMax() - $scale->getMin()) / $xSteps;
         $gridColor = $chart->getOptions()->getGridColor();
-        $color = imagecolorallocate(
-            $image,
-            $gridColor->getRed(),
-            $gridColor->getGreen(),
-            $gridColor->getBlue()
-        );
+        $color = $this->allocateColor($image, $gridColor);
 
         // Draw vertical lines and values.
         for ($i = 0; $i <= $xSteps; $i++) {
@@ -186,12 +176,7 @@ class HorizontalBarChartGdRenderer extends AbstractChartGdRenderer implements Re
 
         // Color for the axes.
         $axisColor = $chart->getOptions()->getAxesColor();
-        $color = imagecolorallocate(
-            $image,
-            $axisColor->getRed(),
-            $axisColor->getGreen(),
-            $axisColor->getBlue()
-        );
+        $color = $this->allocateColor($image, $axisColor);
 
         // Draw X-axis (horizontal).
         imageline(
@@ -242,7 +227,7 @@ class HorizontalBarChartGdRenderer extends AbstractChartGdRenderer implements Re
         $gridHeight = $size->getHeight() - $margin->getBottom() - $gridTop;
 
         // Get data.
-        $dataset = $chart->getDatasets()[0];
+        $dataset = $this->getDatasetsToRender($chart)[0];
         $points = $dataset->getPoints();
         $pointCount = count($points);
 

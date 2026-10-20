@@ -22,14 +22,14 @@ class Size
     /**
      * Chart width.
      *
-     * @var int
+     * @var int<1, max>
      */
     private readonly int $width;
 
     /**
      * Chart height.
      *
-     * @var int
+     * @var int<1, max>
      */
     private readonly int $height;
 
@@ -41,20 +41,20 @@ class Size
      */
     public function __construct(int $width = 750, int $height = 300)
     {
-        $this->width = $width;
-        $this->height = $height;
-
-        if ($this->width <= 0 || $this->height <= 0) {
+        if ($width <= 0 || $height <= 0) {
             throw new ChartException(
                 'Chart dimensions must be positive.'
             );
         }
+
+        $this->width = $width;
+        $this->height = $height;
     }
 
     /**
      * Gets the chart width.
      *
-     * @return int
+     * @return int<1, max>
      */
     public function getWidth(): int
     {
@@ -64,7 +64,7 @@ class Size
     /**
      * Gets the chart height.
      *
-     * @return int
+     * @return int<1, max>
      */
     public function getHeight(): int
     {
@@ -74,7 +74,7 @@ class Size
     /**
      * Returns the chart dimensions as an array.
      *
-     * @return array<string, int>
+     * @return array{width: int<1, max>, height: int<1, max>}
      */
     public function toArray(): array
     {

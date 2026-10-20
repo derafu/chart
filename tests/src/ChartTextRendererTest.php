@@ -16,6 +16,7 @@ use Derafu\Chart\Abstract\AbstractDataset;
 use Derafu\Chart\Chart;
 use Derafu\Chart\ChartFactory;
 use Derafu\Chart\ChartOptions;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Dataset\StandardDataset;
 use Derafu\Chart\Enum\ChartType;
 use Derafu\Chart\Model\Color;
@@ -29,10 +30,13 @@ use Derafu\Chart\Renderer\Text\HorizontalBarChartTextRenderer;
 use Derafu\Chart\Renderer\Text\LineChartTextRenderer;
 use Derafu\Chart\Renderer\Text\ScatterChartTextRenderer;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(ChartFactory::class)]
 #[CoversClass(Chart::class)]
+#[UsesClass(DatasetSelection::class)]
 #[CoversClass(ChartOptions::class)]
 #[CoversClass(AbstractDataset::class)]
 #[CoversClass(StandardDataset::class)]
@@ -192,7 +196,73 @@ class ChartTextRendererTest extends TestCase
         $this->saveChart('scatter', $string);
     }
 
-    private function saveChart($name, $data): void
+    /** @return array<string, array{BarChartTextRenderer|LineChartTextRenderer|ScatterChartTextRenderer}> */
+    public static function adjustedScaleRenderers(): array
+    {
+        return [
+            'bar' => [new BarChartTextRenderer()],
+            'line' => [new LineChartTextRenderer()],
+            'scatter' => [new ScatterChartTextRenderer()],
+        ];
+    }
+
+    #[DataProvider('adjustedScaleRenderers')]
+    public function testTextAxesKeepTheAdjustedMaximumInsteadOfTheRealDataMaximum(
+        BarChartTextRenderer|LineChartTextRenderer|ScatterChartTextRenderer $renderer,
+    ): void {
+        $chart = new Chart(
+            datasets: [new StandardDataset(['points' => ['Low' => 7, 'High' => 43]])],
+            options: new ChartOptions(size: new Size(width: 40, height: 5)),
+            renderer: $renderer,
+        );
+
+        $this->assertSame(43.0, $chart->getScale()->getMaxReal());
+        $this->assertSame(50, $chart->getScale()->getMax());
+        $this->assertStringStartsWith('50 │ ', $chart->render());
+    }
+
+    public function testRendererOptionsCanSwitchAnExistingChartByClassAndInstance(): void
+    {
+        $options = new ChartOptions(size: new Size(width: 40, height: 5));
+        $chart = new Chart(
+            datasets: [new StandardDataset(['points' => ['Low' => 7, 'High' => 43]])],
+            options: $options,
+            renderer: new LineChartTextRenderer(),
+        );
+        $line = $chart->render();
+
+        $this->assertSame($options, $options->setRenderer(BarChartTextRenderer::class));
+        $this->assertInstanceOf(BarChartTextRenderer::class, $chart->getRenderer());
+        $bar = $chart->render();
+        $this->assertStringContainsString('█', $bar);
+        $this->assertNotSame($line, $bar);
+
+        $scatter = new ScatterChartTextRenderer();
+        $this->assertSame($options, $options->setRenderer($scatter));
+        $this->assertSame($scatter, $chart->getRenderer());
+        $output = $chart->render();
+        $this->assertStringContainsString('●', $output);
+        $this->assertNotSame($bar, $output);
+    }
+
+    public function testAnOverlongTitleIsTruncatedWithoutRemovingTheChart(): void
+    {
+        $title = 'Monthly sales for the entire financial year';
+        $chart = new Chart(
+            title: $title,
+            datasets: [new StandardDataset(['points' => ['Low' => 7, 'High' => 43]])],
+            options: new ChartOptions(size: new Size(width: 20, height: 5)),
+            renderer: new BarChartTextRenderer(),
+        );
+
+        $output = $chart->render();
+
+        $this->assertStringStartsWith(substr($title, 0, 20) . "\n\n", $output);
+        $this->assertStringContainsString('50 │ ', $output);
+        $this->assertStringContainsString('Low Hig', $output);
+    }
+
+    private function saveChart(string $name, string $data): void
     {
         $output = 'Chart name: ' . $name . "\n\n" . $data . "\n";
 

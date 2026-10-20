@@ -44,7 +44,7 @@ class StackedBarChartGdRenderer extends AbstractVerticalGridChartGdRenderer impl
         $gridHeight = $gridBottom - $gridTop;
 
         // Get datasets.
-        $datasets = $chart->getDatasets();
+        $datasets = $this->getDatasetsToRender($chart);
 
         // Calculate available width for bars.
         $availableWidth = $size->getWidth() - $margin->getLeft() - $margin->getRight();
@@ -72,12 +72,7 @@ class StackedBarChartGdRenderer extends AbstractVerticalGridChartGdRenderer impl
 
                 // Get dataset color.
                 $color = $dataset->getColor();
-                $barColor = imagecolorallocate(
-                    $image,
-                    $color->getRed(),
-                    $color->getGreen(),
-                    $color->getBlue()
-                );
+                $barColor = $this->allocateColor($image, $color);
 
                 // Draw the bar section.
                 imagefilledrectangle(

@@ -43,34 +43,23 @@ class AreaChartGdRenderer extends AbstractVerticalGridChartGdRenderer implements
 
         // Configurations for points.
         $availableWidth = $size->getWidth() - $margin->getLeft() - $margin->getRight();
-        $pointCount = count($chart->getDatasets()[0]->getPoints());
+        $pointCount = count($this->getDatasetsToRender($chart)[0]->getPoints());
         $xStepSize = $availableWidth / $pointCount;
 
         // Scale.
         $scale = $chart->getScale();
         $valueRange = $scale->getMax() - $scale->getMin();
-        $n_datasets = count($chart->getDatasets());
+        $n_datasets = count($this->getDatasetsToRender($chart));
 
         // Render each dataset.
-        foreach ($chart->getDatasets() as $dataset) {
+        foreach ($this->getDatasetsToRender($chart) as $dataset) {
             $color = $dataset->getColor();
 
             // Color for line and points.
-            $lineColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $lineColor = $this->allocateColor($image, $color);
 
             // Semi-transparent color for the filled area.
-            $fillColor = imagecolorallocatealpha(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue(),
-                80  // Transparency level (0-127).
-            );
+            $fillColor = $this->allocateColorAlpha($image, $color, 80);
 
             $points = $dataset->getPoints();
             $previousX = null;

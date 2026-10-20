@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace Derafu\Chart\Renderer\Gd\Abstract;
 
 use Derafu\Chart\Contract\ChartInterface;
+use Derafu\Chart\Contract\DatasetInterface;
 use Derafu\Chart\Contract\RendererInterface;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Enum\ImageFormat;
 use Derafu\Chart\Exception\ChartException;
 use Derafu\Chart\Model\Color;
@@ -32,6 +34,7 @@ abstract class AbstractChartGdRenderer implements RendererInterface
      */
     public function render(ChartInterface $chart): string
     {
+        $this->getDatasetsToRender($chart);
         $image = $this->createBlankImage($chart);
         $this->renderTitle($image, $chart);
         $this->renderChart($image, $chart);
@@ -40,6 +43,80 @@ abstract class AbstractChartGdRenderer implements RendererInterface
             $image,
             $chart->getOptions()->getImageFormat()
         );
+    }
+
+    /**
+     * Selects populated datasets for rendering without mutating the chart.
+     *
+     * @return non-empty-list<DatasetInterface>
+     */
+    protected function getDatasetsToRender(ChartInterface $chart): array
+    {
+        return array_values(DatasetSelection::forRendering($chart->getDatasets()));
+    }
+
+    /**
+     * Allocates an opaque color without passing a failed result to drawing.
+     */
+    protected function allocateColor(GdImage $image, Color $color): int
+    {
+        $allocated = imagecolorallocate(
+            $image,
+            $color->getRed(),
+            $color->getGreen(),
+            $color->getBlue()
+        );
+        if ($allocated === false) {
+            throw new ChartException([
+                'Could not allocate chart color {color}.',
+                'color' => (string) $color,
+            ]);
+        }
+
+        return $allocated;
+    }
+
+    /**
+     * Allocates a color with the requested GD transparency.
+     *
+     * @param int<0, 127> $alpha
+     */
+    protected function allocateColorAlpha(GdImage $image, Color $color, int $alpha): int
+    {
+        $allocated = imagecolorallocatealpha(
+            $image,
+            $color->getRed(),
+            $color->getGreen(),
+            $color->getBlue(),
+            $alpha
+        );
+        if ($allocated === false) {
+            throw new ChartException([
+                'Could not allocate chart color {color} with alpha {alpha}.',
+                'color' => (string) $color,
+                'alpha' => $alpha,
+            ]);
+        }
+
+        return $allocated;
+    }
+
+    /**
+     * Measures text before its bounding-box coordinates are consumed.
+     *
+     * @return array<int, int>
+     */
+    protected function measureText(int $fontSize, float $angle, string $fontPath, string $text): array
+    {
+        $box = @imagettfbbox($fontSize, $angle, $fontPath, $text);
+        if ($box === false) {
+            throw new ChartException([
+                'Could not measure chart text using font {font}.',
+                'font' => $fontPath,
+            ]);
+        }
+
+        return $box;
     }
 
     /**
@@ -69,12 +146,7 @@ abstract class AbstractChartGdRenderer implements RendererInterface
         imagealphablending($image, true);
         imagesavealpha($image, true);
 
-        $white = imagecolorallocate(
-            $image,
-            $backgroundColor->getRed(),
-            $backgroundColor->getGreen(),
-            $backgroundColor->getBlue()
-        );
+        $white = $this->allocateColor($image, $backgroundColor);
 
         imagefill($image, 0, 0, $white);
 
@@ -92,20 +164,22 @@ abstract class AbstractChartGdRenderer implements RendererInterface
     {
         ob_start();
 
-        match($format) {
-            ImageFormat::PNG => imagepng($image),
-            ImageFormat::JPEG => imagejpeg($image),
-            ImageFormat::WEBP => imagewebp($image),
-            ImageFormat::GIF => imagegif($image),
-            default => throw new ChartException([
-                'Chart output format {format} is not supported by the renderer.',
-                'format' => $format->name,
-            ]),
-        };
+        try {
+            match($format) {
+                ImageFormat::PNG => imagepng($image),
+                ImageFormat::JPEG => imagejpeg($image),
+                ImageFormat::WEBP => imagewebp($image),
+                ImageFormat::GIF => imagegif($image),
+                default => throw new ChartException([
+                    'Chart output format {format} is not supported by the renderer.',
+                    'format' => $format->name,
+                ]),
+            };
 
-        $data = ob_get_clean();
-
-        return $data;
+            return ob_get_contents();
+        } finally {
+            ob_end_clean();
+        }
     }
 
     /**
@@ -180,7 +254,7 @@ abstract class AbstractChartGdRenderer implements RendererInterface
         $fontPath = $this->getFontPath($style);
 
         // Get text dimensions.
-        $box = imagettfbbox($fontSize, $angle, $fontPath, $text);
+        $box = $this->measureText($fontSize, $angle, $fontPath, $text);
         $textWidth = abs($box[4] - $box[0]);
         $textHeight = abs($box[5] - $box[1]);
 
@@ -200,12 +274,7 @@ abstract class AbstractChartGdRenderer implements RendererInterface
             $angle,
             $x,
             $y + $textHeight, // Adjust vertical position so "y" aligns with the text baseline.
-            imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue(),
-            ),
+            $this->allocateColor($image, $color),
             $fontPath,
             $text
         );
@@ -291,7 +360,7 @@ abstract class AbstractChartGdRenderer implements RendererInterface
         $fontSize = $chart->getOptions()->getLabelFontSize();
 
         // Calculate the total space required for the legends.
-        $datasets = $chart->getDatasets();
+        $datasets = $this->getDatasetsToRender($chart);
         $totalLegends = count($datasets);
         $legendWidth = (int) round(($size->getWidth() - $margin->getLeft() - $margin->getRight()) / $totalLegends);
 
@@ -307,12 +376,7 @@ abstract class AbstractChartGdRenderer implements RendererInterface
 
             // Color for the line and point.
             $color = $dataset->getColor();
-            $lineColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $lineColor = $this->allocateColor($image, $color);
 
             // Draw sample line.
             $sampleLineStart = $legendX;

@@ -14,6 +14,7 @@ namespace Derafu\Chart\Renderer\Gd;
 
 use Derafu\Chart\Contract\ChartInterface;
 use Derafu\Chart\Contract\RendererInterface;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Renderer\Gd\Abstract\AbstractVerticalGridChartGdRenderer;
 use Derafu\Chart\Renderer\Gd\Enum\TextAlign;
 use GdImage;
@@ -44,7 +45,7 @@ class WaterfallChartGdRenderer extends AbstractVerticalGridChartGdRenderer imple
         $gridHeight = $gridBottom - $gridTop;
 
         // Get dataset and points.
-        $dataset = $chart->getDatasets()[0]; // Waterfall charts use only one dataset.
+        $dataset = $this->getDatasetsToRender($chart)[0]; // Waterfall charts use only one dataset.
         $points = $dataset->getPoints();
         $totalPoints = count($points);
 
@@ -56,18 +57,8 @@ class WaterfallChartGdRenderer extends AbstractVerticalGridChartGdRenderer imple
         // Colors for different types of bars.
         $datasetColor = $dataset->getColor();
         $datasetNegativeColor = $datasetColor->getNegative();
-        $positiveColor = imagecolorallocate(
-            $image,
-            $datasetColor->getRed(),
-            $datasetColor->getGreen(),
-            $datasetColor->getBlue()
-        );
-        $negativeColor = imagecolorallocate(
-            $image,
-            $datasetNegativeColor->getRed(),
-            $datasetNegativeColor->getGreen(),
-            $datasetNegativeColor->getBlue()
-        );
+        $positiveColor = $this->allocateColor($image, $datasetColor);
+        $negativeColor = $this->allocateColor($image, $datasetNegativeColor);
 
         $runningTotal = 0;
 
@@ -151,5 +142,13 @@ class WaterfallChartGdRenderer extends AbstractVerticalGridChartGdRenderer imple
         $valueRange = $scale->getMax() - $scale->getMin();
 
         return (int) round($gridBottom - (($value - $scale->getMin()) * $gridHeight / $valueRange));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDatasetsToRender(ChartInterface $chart): array
+    {
+        return array_values(DatasetSelection::forRendering($chart->getDatasets(), true));
     }
 }

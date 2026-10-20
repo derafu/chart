@@ -55,7 +55,7 @@ interface DatasetInterface
     /**
      * Retrieves the complete list of labels for the dataset points.
      *
-     * @return array
+     * @return list<string>
      */
     public function getLabels(): array;
 

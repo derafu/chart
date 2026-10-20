@@ -127,7 +127,7 @@ class Scale
      */
     public function getMinReal(): int|float
     {
-        return $this->min;
+        return $this->min_real;
     }
 
     /**
@@ -139,7 +139,7 @@ class Scale
      */
     public function getMaxReal(): int|float
     {
-        return $this->max;
+        return $this->max_real;
     }
 
     /**

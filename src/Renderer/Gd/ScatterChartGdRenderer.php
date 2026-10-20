@@ -44,7 +44,7 @@ class ScatterChartGdRenderer extends AbstractVerticalGridChartGdRenderer impleme
         $gridHeight = $gridBottom - $gridTop;
 
         // Get datasets.
-        $datasets = $chart->getDatasets();
+        $datasets = $this->getDatasetsToRender($chart);
 
         // Calculate available width for points.
         $availableWidth = $size->getWidth() - $margin->getLeft() - $margin->getRight();
@@ -60,12 +60,7 @@ class ScatterChartGdRenderer extends AbstractVerticalGridChartGdRenderer impleme
         foreach ($datasets as $dataset) {
             // Get dataset color.
             $color = $dataset->getColor();
-            $pointColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $pointColor = $this->allocateColor($image, $color);
 
             // Render each point.
             foreach ($dataset->getPoints() as $pointIndex => $point) {

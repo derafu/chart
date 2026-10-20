@@ -26,8 +26,8 @@ class LineChartTextRenderer extends AbstractChartTextRenderer implements Rendere
      */
     protected function renderChart(ChartInterface $chart): string
     {
-        $dataset = $chart->getDatasets()[0];
-        $maxValue = $chart->getScale()->getMaxReal();
+        $dataset = array_values($this->getDatasetsToRender($chart))[0];
+        $maxValue = $chart->getScale()->getMax();
         $height = $chart->getOptions()->getSize()->getHeight();
         $points = $dataset->getPoints();
 

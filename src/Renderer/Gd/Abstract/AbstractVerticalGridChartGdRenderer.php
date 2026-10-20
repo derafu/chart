@@ -44,12 +44,7 @@ abstract class AbstractVerticalGridChartGdRenderer extends AbstractChartGdRender
         $ySteps = 5;
         $yStepValue = ($scale->getMax() - $scale->getMin()) / $ySteps;
         $gridColor = $chart->getOptions()->getGridColor();
-        $color = imagecolorallocate(
-            $image,
-            $gridColor->getRed(),
-            $gridColor->getGreen(),
-            $gridColor->getBlue()
-        );
+        $color = $this->allocateColor($image, $gridColor);
 
         // Area to draw the grid.
         $gridTop = (int) round($margin->getTop() + $titleHeight * 3); // Where the grid starts.
@@ -107,12 +102,7 @@ abstract class AbstractVerticalGridChartGdRenderer extends AbstractChartGdRender
 
         // Color for the axes.
         $axisColor = $chart->getOptions()->getAxesColor();
-        $color = imagecolorallocate(
-            $image,
-            $axisColor->getRed(),
-            $axisColor->getGreen(),
-            $axisColor->getBlue()
-        );
+        $color = $this->allocateColor($image, $axisColor);
 
         // Draw Y-axis (vertical).
         imageline(
@@ -150,7 +140,7 @@ abstract class AbstractVerticalGridChartGdRenderer extends AbstractChartGdRender
         }
 
         // Draw marks on the X-axis for each data point.
-        $dataset = $chart->getDatasets()[0];
+        $dataset = $this->getDatasetsToRender($chart)[0];
         $points = $dataset->getPoints();
         $pointCount = count($points);
 
@@ -193,7 +183,7 @@ abstract class AbstractVerticalGridChartGdRenderer extends AbstractChartGdRender
         $gridBottom = $size->getHeight() - $margin->getBottom();
 
         // Get data.
-        $dataset = $chart->getDatasets()[0];
+        $dataset = $this->getDatasetsToRender($chart)[0];
         $points = $dataset->getPoints();
         $pointCount = count($points);
 

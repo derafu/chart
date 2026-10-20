@@ -75,7 +75,7 @@ interface ChartInterface
     /**
      * Creates a new dataset for the chart.
      *
-     * @param array $options
+     * @param array<array-key, mixed> $options
      * @return DatasetInterface
      */
     public function newDataset(array $options): DatasetInterface;

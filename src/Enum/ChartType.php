@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Derafu\Chart\Enum;
 
+use Derafu\Chart\Contract\DatasetInterface;
+use Derafu\Chart\Contract\RendererInterface;
 use Derafu\Chart\Dataset\BubbleDataset;
 use Derafu\Chart\Dataset\StandardDataset;
 use Derafu\Chart\Renderer\Gd\AreaChartGdRenderer;
@@ -89,7 +91,7 @@ enum ChartType: string
     /**
      * List of chart types and their associated dataset classes.
      *
-     * @var array<string, string>
+     * @var array<string, class-string<DatasetInterface>>
      */
     private const DATASET_CLASSES = [
         self::BAR->value => StandardDataset::class,
@@ -130,7 +132,7 @@ enum ChartType: string
      * Returns the dataset class that should be used when adding
      * data of this enum type to a chart.
      *
-     * @return string
+     * @return class-string<DatasetInterface>
      */
     public function getDatasetClass(): string
     {
@@ -140,7 +142,7 @@ enum ChartType: string
     /**
      * Returns the class that should be used to render the chart based on its type.
      *
-     * @return string
+     * @return class-string<RendererInterface>
      */
     public function getRendererClass(): string
     {

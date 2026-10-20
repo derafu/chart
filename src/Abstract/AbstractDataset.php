@@ -32,16 +32,16 @@ abstract class AbstractDataset implements DatasetInterface
     /**
      * Color of all points in the dataset.
      *
-     * @var Color|null
+     * @var Color
      */
-    protected ?Color $color;
+    protected Color $color;
 
     /**
      * List of points in the dataset.
      *
      * @var PointInterface[]
      */
-    protected array $points;
+    protected array $points = [];
 
     /**
      * {@inheritDoc}

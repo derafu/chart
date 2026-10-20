@@ -26,8 +26,8 @@ class ScatterChartTextRenderer extends AbstractChartTextRenderer implements Rend
      */
     protected function renderChart(ChartInterface $chart): string
     {
-        $datasets = $chart->getDatasets();
-        $maxValue = $chart->getScale()->getMaxReal();
+        $datasets = $this->getDatasetsToRender($chart);
+        $maxValue = $chart->getScale()->getMax();
         $height = $chart->getOptions()->getSize()->getHeight();
 
         // Calculate scale and number formatting.
@@ -53,7 +53,7 @@ class ScatterChartTextRenderer extends AbstractChartTextRenderer implements Rend
         }
 
         // Build each row from top to bottom.
-        $maxPoints = 0;
+        $maxPoints = max(array_map(fn ($dataset) => count($dataset->getPoints()), $datasets));
         for ($i = 0; $i < $height; $i++) {
             $currentValue = $maxValue - ($i * $yStep);
 
@@ -62,7 +62,6 @@ class ScatterChartTextRenderer extends AbstractChartTextRenderer implements Rend
             $row = $yLabel . ' ' . self::AXIS_VERTICAL . ' ';
 
             // Create an array for the row.
-            $maxPoints = max(array_map(fn ($dataset) => count($dataset->getPoints()), $datasets));
             $lineChars = array_fill(0, $maxPoints * $pointSpacing, ' ');
 
             // Draw points from each dataset.
@@ -89,7 +88,7 @@ class ScatterChartTextRenderer extends AbstractChartTextRenderer implements Rend
 
         // Add X-axis labels.
         $labels = str_repeat(' ', $maxLabelLength + 3);
-        foreach ($datasets[0]->getPoints() as $point) {
+        foreach (array_values($datasets)[0]->getPoints() as $point) {
             $labels .= str_pad(substr($point->getLabel(), 0, $labelLength), $pointSpacing);
         }
         $matrix[] = $labels;

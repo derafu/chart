@@ -39,37 +39,26 @@ class BubbleChartGdRenderer extends AbstractVerticalGridChartGdRenderer implemen
         $gridBottom = $size->getHeight() - $margin->getBottom();
         $gridHeight = $gridBottom - $gridTop;
         $availableWidth = $size->getWidth() - $margin->getLeft() - $margin->getRight();
-        $pointCount = count($chart->getDatasets()[0]->getPoints());
+        $pointCount = count($this->getDatasetsToRender($chart)[0]->getPoints());
         $xStepSize = $availableWidth / $pointCount;
         $scale = $chart->getScale();
         $valueRange = $scale->getMax() - $scale->getMin();
-        $n_datasets = count($chart->getDatasets());
+        $n_datasets = count($this->getDatasetsToRender($chart));
 
         // Bubble configuration.
         $minBubbleSize = 10; // Minimum size in pixels.
         $maxBubbleSize = 50; // Maximum size in pixels.
 
-        foreach ($chart->getDatasets() as $dataset) {
+        foreach ($this->getDatasetsToRender($chart) as $dataset) {
             assert($dataset instanceof BubbleDatasetInterface);
 
             $color = $dataset->getColor();
 
             // Solid color for the border.
-            $borderColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $borderColor = $this->allocateColor($image, $color);
 
             // Semi-transparent color for the fill.
-            $fillColor = imagecolorallocatealpha(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue(),
-                50  // Transparency level.
-            );
+            $fillColor = $this->allocateColorAlpha($image, $color, 50);
 
             foreach ($dataset->getPoints() as $pointIndex => $point) {
                 $x = (int) round(

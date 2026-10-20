@@ -15,6 +15,7 @@ namespace Derafu\TestsChart;
 use Derafu\Chart\Chart;
 use Derafu\Chart\ChartFactory;
 use Derafu\Chart\ChartOptions;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Enum\ChartType;
 use Derafu\Chart\Exception\ChartException;
 use Derafu\Chart\Model\Color;
@@ -33,6 +34,7 @@ use Throwable;
 #[CoversClass(ChartException::class)]
 #[CoversClass(Size::class)]
 #[CoversClass(Chart::class)]
+#[UsesClass(DatasetSelection::class)]
 #[CoversClass(ChartFactory::class)]
 #[UsesClass(ChartOptions::class)]
 #[UsesClass(ChartType::class)]

@@ -14,6 +14,7 @@ namespace Derafu\Chart\Renderer\Gd;
 
 use Derafu\Chart\Contract\ChartInterface;
 use Derafu\Chart\Contract\RendererInterface;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Enum\ColorPalette;
 use Derafu\Chart\Model\Color;
 use Derafu\Chart\Renderer\Gd\Abstract\AbstractChartGdRenderer;
@@ -37,7 +38,7 @@ class DonutChartGdRenderer extends AbstractChartGdRenderer implements RendererIn
         $fontSize = $chart->getOptions()->getLabelFontSize();
 
         // Get data and calculate legend - same as pie.
-        $dataset = $chart->getDatasets()[0];
+        $dataset = $this->getDatasetsToRender($chart)[0];
         $points = $dataset->getPoints();
         $total = 0;
         foreach ($points as $point) {
@@ -50,7 +51,7 @@ class DonutChartGdRenderer extends AbstractChartGdRenderer implements RendererIn
         foreach ($points as $point) {
             $percentage = round(($point->getValue() / $total) * 100, 1);
             $text = $point->getLabel() . ' (' . $percentage . '%)';
-            $box = imagettfbbox($fontSize, 0, $fontPath, $text);
+            $box = $this->measureText($fontSize, 0, $fontPath, $text);
             $textWidth = abs($box[4] - $box[0]);
             $maxLegendWidth = max($maxLegendWidth, $textWidth);
         }
@@ -74,7 +75,7 @@ class DonutChartGdRenderer extends AbstractChartGdRenderer implements RendererIn
         $innerRadius = (int) round($radius * 0.5); // 50% del radio externo.
 
         // Draw background for the hole.
-        $white = imagecolorallocate($image, 255, 255, 255);
+        $white = $this->allocateColor($image, new Color('#FFFFFF'));
         imagefilledellipse(
             $image,
             $centerX,
@@ -91,12 +92,7 @@ class DonutChartGdRenderer extends AbstractChartGdRenderer implements RendererIn
         foreach ($points as $point) {
             $angle = (360 * $point->getValue()) / $total;
             $color = $point->getColor() ?? new Color(ColorPalette::getColorByIndex($i++));
-            $sectorColor = imagecolorallocate(
-                $image,
-                $color->getRed(),
-                $color->getGreen(),
-                $color->getBlue()
-            );
+            $sectorColor = $this->allocateColor($image, $color);
 
             // Draw slice.
             imagefilledarc(
@@ -166,5 +162,13 @@ class DonutChartGdRenderer extends AbstractChartGdRenderer implements RendererIn
             $innerRadius * 2,
             $white
         );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getDatasetsToRender(ChartInterface $chart): array
+    {
+        return array_values(DatasetSelection::forRendering($chart->getDatasets(), true));
     }
 }

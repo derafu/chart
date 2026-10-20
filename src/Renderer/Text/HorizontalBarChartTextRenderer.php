@@ -36,7 +36,7 @@ class HorizontalBarChartTextRenderer extends AbstractChartTextRenderer implement
      */
     protected function renderChart(ChartInterface $chart): string
     {
-        $dataset = $chart->getDatasets()[0];
+        $dataset = array_values($this->getDatasetsToRender($chart))[0];
         $maxValue = $chart->getScale()->getMax();
         $width = $chart->getOptions()->getSize()->getWidth();
 

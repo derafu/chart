@@ -16,10 +16,12 @@ use Derafu\Chart\Chart;
 use Derafu\Chart\ChartFactory;
 use Derafu\Chart\ChartOptions;
 use Derafu\Chart\Dataset\BubbleDataset;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Dataset\StandardDataset;
 use Derafu\Chart\Enum\ChartType;
 use Derafu\Chart\Enum\ColorGroup;
 use Derafu\Chart\Enum\ColorPalette;
+use Derafu\Chart\Enum\ImageFormat;
 use Derafu\Chart\Model\BubblePoint;
 use Derafu\Chart\Model\Color;
 use Derafu\Chart\Model\Margin;
@@ -40,12 +42,16 @@ use Derafu\Chart\Renderer\Gd\RadarChartGdRenderer;
 use Derafu\Chart\Renderer\Gd\ScatterChartGdRenderer;
 use Derafu\Chart\Renderer\Gd\StackedBarChartGdRenderer;
 use Derafu\Chart\Renderer\Gd\WaterfallChartGdRenderer;
+use GdImage;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(ChartFactory::class)]
 #[CoversClass(StandardDataset::class)]
 #[CoversClass(Chart::class)]
+#[UsesClass(DatasetSelection::class)]
 #[CoversClass(ChartOptions::class)]
 #[CoversClass(ChartType::class)]
 #[CoversClass(Color::class)]
@@ -644,7 +650,69 @@ class ChartGdRendererTest extends TestCase
         $this->saveChart('waterfall', $png);
     }
 
-    private function saveChart($name, $data): void
+    /** @return array<string, array{ChartType}> */
+    public static function singleSeriesLabelTypes(): array
+    {
+        return [
+            'area' => [ChartType::AREA],
+            'line' => [ChartType::LINE],
+            'bubble' => [ChartType::BUBBLE],
+            'scatter' => [ChartType::SCATTER],
+        ];
+    }
+
+    #[DataProvider('singleSeriesLabelTypes')]
+    public function testSingleSeriesValueLabelsUseTheirConfiguredColorOnlyWhenEnabled(ChartType $type): void
+    {
+        $dataset = $type === ChartType::BUBBLE
+            ? new BubbleDataset(['points' => ['A' => [20, 10], 'B' => [40, 20], 'C' => [10, 15]]])
+            : new StandardDataset(['points' => ['A' => 20, 'B' => 40, 'C' => 10]]);
+        $counts = [];
+        foreach ([true, false] as $enabled) {
+            $chart = new Chart(
+                type: $type,
+                datasets: [$dataset],
+                options: new ChartOptions(
+                    size: new Size(width: 500, height: 350),
+                    labelFontSize: 18,
+                    labelsOnGridColor: '#FF00FF',
+                    showLabelsOnGrid: $enabled,
+                ),
+            );
+            $image = imagecreatefromstring($chart->render());
+            $this->assertInstanceOf(GdImage::class, $image);
+            $count = 0;
+            for ($y = 0; $y < imagesy($image); $y++) {
+                for ($x = 0; $x < imagesx($image); $x++) {
+                    if ((imagecolorat($image, $x, $y) & 0xFFFFFF) === 0xFF00FF) {
+                        $count++;
+                    }
+                }
+            }
+            $counts[] = $count;
+        }
+
+        $this->assertGreaterThan(0, $counts[0], 'Enabled value labels must draw pixels in their configured color.');
+        $this->assertSame(0, $counts[1], 'Disabled value labels must not draw their configured color.');
+    }
+
+    public function testAnUnknownFormatFallsBackToAPngWithTheConfiguredDimensions(): void
+    {
+        $size = new Size(width: 320, height: 240);
+        $options = new ChartOptions(size: $size, imageFormat: 'unknown');
+        $chart = new Chart(
+            datasets: [new StandardDataset(['points' => ['Low' => 7, 'High' => 43]])],
+            options: $options,
+        );
+
+        $this->assertSame(ImageFormat::PNG, $options->getImageFormat());
+        $info = getimagesizefromstring($chart->render());
+        $this->assertIsArray($info);
+        $this->assertSame('image/png', $info['mime']);
+        $this->assertSame($size->toArray(), ['width' => $info[0], 'height' => $info[1]]);
+    }
+
+    private function saveChart(string $name, string $data): void
     {
         $filename = dirname(__FILE__, 2) . '/output/chart-' . $name . '.png';
         file_put_contents($filename, $data);

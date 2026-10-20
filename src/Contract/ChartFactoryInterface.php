@@ -20,7 +20,7 @@ interface ChartFactoryInterface
     /**
      * Creates a new chart instance from an array of data.
      *
-     * @param array $options
+     * @param array<array-key, mixed> $options
      * @return ChartInterface
      */
     public function createFromArray(array $options): ChartInterface;
@@ -28,7 +28,7 @@ interface ChartFactoryInterface
     /**
      * Renders a chart created from an array of data.
      *
-     * @param array $options
+     * @param array<array-key, mixed> $options
      * @return string
      */
     public function renderFromArray(array $options): string;

@@ -16,9 +16,12 @@ use Derafu\Chart\Contract\ChartInterface;
 use Derafu\Chart\Contract\ChartOptionsInterface;
 use Derafu\Chart\Contract\DatasetInterface;
 use Derafu\Chart\Contract\RendererInterface;
+use Derafu\Chart\Dataset\DatasetSelection;
 use Derafu\Chart\Enum\ChartType;
+use Derafu\Chart\Exception\ChartException;
 use Derafu\Chart\Model\Scale;
 use Derafu\Translation\Exception\Core\TranslatableLogicException as LogicException;
+use Error;
 
 /**
  * Class representing a chart.
@@ -87,7 +90,7 @@ class Chart implements ChartInterface
      * @param string|null $title
      * @param string|null $labelX
      * @param string|null $labelY
-     * @param array $datasets
+     * @param DatasetInterface[] $datasets
      * @param ChartOptionsInterface|null $options
      * @param RendererInterface|null $renderer
      */
@@ -215,12 +218,16 @@ class Chart implements ChartInterface
      */
     public function getScale(float $extra = 0.05, int $decimals = 0): Scale
     {
+        $datasets = DatasetSelection::forRendering(
+            $this->datasets,
+            in_array($this->type, [ChartType::PIE, ChartType::DONUT, ChartType::WATERFALL], true)
+        );
         $minValue = PHP_FLOAT_MAX;
         $maxValue = PHP_FLOAT_MIN;
 
         if ($this->type === ChartType::STACKED_BAR) {
             $stack = [];
-            foreach ($this->datasets as $dataset) {
+            foreach ($datasets as $dataset) {
                 foreach ($dataset->getPoints() as $point) {
                     if (!isset($stack[$point->getLabel()])) {
                         $stack[$point->getLabel()] = 0;
@@ -234,7 +241,7 @@ class Chart implements ChartInterface
             }
         } elseif ($this->type === ChartType::WATERFALL) {
             $this->validate();
-            $points = $this->datasets[0]->getPoints();
+            $points = reset($datasets)->getPoints();
             $runningTotal = $points[0]->getValue();
             foreach ($points as $point) {
                 $runningTotal += $point->getValue();
@@ -242,7 +249,7 @@ class Chart implements ChartInterface
                 $minValue = min($minValue, $runningTotal);
             }
         } else {
-            foreach ($this->datasets as $dataset) {
+            foreach ($datasets as $dataset) {
                 foreach ($dataset->getPoints() as $point) {
                     $minValue = min($minValue, $point->getValue());
                     $maxValue = max($maxValue, $point->getValue());
@@ -283,7 +290,28 @@ class Chart implements ChartInterface
             if ($renderer instanceof RendererInterface) {
                 return $renderer;
             } elseif (is_string($renderer)) {
-                return new $renderer();
+                if (!class_exists($renderer)) {
+                    throw new ChartException([
+                        'Chart renderer class {renderer} does not exist.',
+                        'renderer' => $renderer,
+                    ]);
+                }
+                if (!is_a($renderer, RendererInterface::class, true)) {
+                    throw new ChartException([
+                        'Chart renderer class {renderer} must implement {interface}.',
+                        'renderer' => $renderer,
+                        'interface' => RendererInterface::class,
+                    ]);
+                }
+                try {
+                    return new $renderer();
+                } catch (Error $exception) {
+                    throw new ChartException([
+                        'Could not create chart renderer {renderer}: {error}',
+                        'renderer' => $renderer,
+                        'error' => $exception->getMessage(),
+                    ], previous: $exception);
+                }
             }
         }
 
@@ -310,5 +338,9 @@ class Chart implements ChartInterface
                 'The chart requires at least one dataset before it can be rendered.'
             );
         }
+        DatasetSelection::forRendering(
+            $this->datasets,
+            in_array($this->type, [ChartType::PIE, ChartType::DONUT, ChartType::WATERFALL], true)
+        );
     }
 }
