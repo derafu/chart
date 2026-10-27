@@ -1,0 +1,21 @@
+imports:
+    - { resource: '../../../resources/config/chart-services.yaml' }
+
+services:
+    Symfony\Contracts\Translation\TranslatorInterface:
+        class: Symfony\Component\Translation\Translator
+        factory: ['Derafu\Translation\TranslatorFactory', 'create']
+        arguments:
+            $defaultLocale: es
+            $fallbackLocales: [en]
+            $resourceProviders: !tagged_iterator derafu_translation.resource_provider
+
+    test.chart_services:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        public: true
+        tags: [container.service_locator]
+        arguments:
+            -
+                'Derafu\Chart\Contract\ChartFactoryInterface': '@Derafu\Chart\Contract\ChartFactoryInterface'
+                'Derafu\Chart\Translation\ChartTranslationResourceProvider': '@Derafu\Chart\Translation\ChartTranslationResourceProvider'
+                'Symfony\Contracts\Translation\TranslatorInterface': '@Symfony\Contracts\Translation\TranslatorInterface'

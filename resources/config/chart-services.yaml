@@ -11,6 +11,9 @@ services:
         autoconfigure: true
         public: false
 
+    Derafu\Chart\Contract\ChartFactoryInterface:
+        class: Derafu\Chart\ChartFactory
+
     # Feeds resources/translations into the consuming app's Translator (the
     # app must pass $resourceProviders: !tagged_iterator
     # derafu_translation.resource_provider to TranslatorFactory::create(),
