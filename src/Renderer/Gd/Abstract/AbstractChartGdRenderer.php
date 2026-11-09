@@ -108,6 +108,7 @@ abstract class AbstractChartGdRenderer implements RendererInterface
      */
     protected function measureText(int $fontSize, float $angle, string $fontPath, string $text): array
     {
+        /** @var array{int, int, int, int, int, int, int, int}|false $box */
         $box = @imagettfbbox($fontSize, $angle, $fontPath, $text);
         if ($box === false) {
             throw new ChartException([
